@@ -12,7 +12,7 @@ public class Status {
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public String getStatus() {
-		return Database.getTable(statusTable);
+		return Database.getTableToXML(statusTable);
 	}
 
 }

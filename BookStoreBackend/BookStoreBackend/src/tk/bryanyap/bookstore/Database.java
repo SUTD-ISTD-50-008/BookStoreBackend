@@ -1,14 +1,17 @@
 package tk.bryanyap.bookstore;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,7 +26,13 @@ public class Database {
 	private static int port = 3306;
 	private static String databaseName = "bookstore";
 
-	public static String query(String query) {
+	/**
+	 * Used to run a query and output to an XML String
+	 * 
+	 * @param query
+	 * @return xmlString
+	 */
+	public static String queryToXML(String query) {
 		Connection connect = null;
 		Statement statement = null;
 		ResultSet resultSet = null;
@@ -80,15 +89,143 @@ public class Database {
 			connect.close();
 
 			// Display the XML
-			return stringOut.toString();
+			if (stringOut.equals(null) || stringOut.equals("")) {
+				return "<results>No results</results>";
+			} else {
+				return stringOut.toString();
+			}
 
-		} catch (Exception e) {
-			return error(e.toString());
+		} catch (SQLException e) {
+			return Database.error(e.getMessage() + ",SQLException");
+		} catch (ParserConfigurationException e) {
+			return Database.error(e.getMessage()
+					+ ",ParserConfigurationException");
+		} catch (IOException e) {
+			return Database.error(e.getMessage() + ",IOException");
+		} catch (ClassNotFoundException e) {
+			return Database.error(e.getMessage() + ",IOException");
 		}
 	}
 
-	public static String getTable(String table) {
-		return query("select * from " + table + ";");
+	/**
+	 * Used to query an entire Table and output to an XML String
+	 * 
+	 * @param table
+	 * @return xmlString
+	 */
+	public static String getTableToXML(String table) {
+		return queryToXML("select * from " + table + ";");
+	}
+
+	/**
+	 * Used to run a query and output to a ResultSet object
+	 * 
+	 * @param query
+	 * @return resultSet
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
+	public static ResultSet queryToResultSet(String query) throws SQLException,
+			ClassNotFoundException {
+		Connection connect = null;
+		Statement statement = null;
+		ResultSet resultSet = null;
+
+		// Load the MySQL driver, each DB has its own driver
+
+		Class.forName("com.mysql.jdbc.Driver");
+
+		// Setup the connection with the DB
+		connect = DriverManager.getConnection("jdbc:mysql://" + ipAddress + ":"
+				+ port + "/" + databaseName, userid, password);
+
+		// Statements the issue of SQL queries to the database
+		statement = connect.createStatement();
+
+		// resultSet gets the result of the SQL query
+		resultSet = statement.executeQuery(query);
+
+		return resultSet;
+
+	}
+
+	public static String queryFirstResult(String query) throws SQLException,
+			ClassNotFoundException {
+		Connection connect = null;
+		Statement statement = null;
+		ResultSet resultSet = null;
+		String result = "";
+
+		// Load the MySQL driver, each DB has its own driver
+		Class.forName("com.mysql.jdbc.Driver");
+
+		// Setup the connection with the DB
+		connect = DriverManager.getConnection("jdbc:mysql://" + ipAddress + ":"
+				+ port + "/" + databaseName, userid, password);
+
+		// Statements the issue of SQL queries to the database
+		statement = connect.createStatement();
+
+		// resultSet gets the result of the SQL query
+		resultSet = statement.executeQuery(query);
+
+		// Get the first result in the ResultSet
+		if (resultSet.next()) {
+			result = resultSet.getString(1);
+		}
+		return result;
+	}
+
+	/**
+	 * Used to run an update into the database
+	 * 
+	 * @param query
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	public static void update(String query) throws ClassNotFoundException,
+			SQLException {
+		Connection connect = null;
+		Statement statement = null;
+
+		// Load the MySQL driver, each DB has its own driver
+		Class.forName("com.mysql.jdbc.Driver");
+
+		// Setup the connection with the DB
+		connect = DriverManager.getConnection("jdbc:mysql://" + ipAddress + ":"
+				+ port + "/" + databaseName, userid, password);
+
+		// Statements the issue of SQL queries to the database
+		statement = connect.createStatement();
+
+		// Execute the query
+		statement.executeQuery(query);
+	}
+
+	/**
+	 * Used to run an insert query into the database
+	 * 
+	 * @param query
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
+	public static void insert(String query) throws SQLException,
+			ClassNotFoundException {
+		Connection connect = null;
+		Statement statement = null;
+
+		// Load the MySQL driver, each DB has its own driver
+		Class.forName("com.mysql.jdbc.Driver");
+
+		// Setup the connection with the DB
+		connect = DriverManager.getConnection("jdbc:mysql://" + ipAddress + ":"
+				+ port + "/" + databaseName, userid, password);
+
+		// Statements the issue of SQL queries to the database
+		statement = connect.createStatement();
+
+		// Execute the query
+		statement.executeQuery(query);
 	}
 
 	/**
@@ -98,7 +235,30 @@ public class Database {
 	 * @param error
 	 * @return errorXMLString
 	 */
-	private static String error(String error) {
+	public static String error(String error) {
 		return "<Error>" + error + "</Error>";
+	}
+
+	/**
+	 * Takes in an Exception and converts it to XML format with <Error> and
+	 * </Error> tags
+	 * 
+	 * @param e
+	 * @return errorXMLString
+	 */
+	public static String error(Exception e) {
+		return error(e.getMessage());
+	}
+
+	/**
+	 * Takes in an Exception and description as a String and concatenates both
+	 * to form an XML String with <Error> and </Error> tags
+	 * 
+	 * @param e
+	 * @param description
+	 * @return errorXMLString
+	 */
+	public static String error(Exception e, String description) {
+		return error(e.getMessage() + "," + description);
 	}
 }
