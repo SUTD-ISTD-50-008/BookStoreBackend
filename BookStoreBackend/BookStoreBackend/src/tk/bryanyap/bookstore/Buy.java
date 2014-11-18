@@ -14,6 +14,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * 
+ * @author Bryan Yap
+ *
+ */
 @Path("/buy")
 public class Buy {
 	@GET
@@ -64,6 +69,20 @@ public class Buy {
 		return "<success>" + input + "</success>";
 	}
 
+	/**
+	 * Process the orders book by book according to the input list. Processing
+	 * is done by updating the quantities for each book in the book table
+	 * followed with an insert into the order table. Each different book results
+	 * in a round of updating and insertion.
+	 * 
+	 * @param isbns
+	 * @param quantities
+	 * @param orderID
+	 * @param orderTime
+	 * @throws InvalidAttributeValueException
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	private void processOrder(String[] isbns, String[] quantities, int orderID,
 			Timestamp orderTime) throws InvalidAttributeValueException,
 			ClassNotFoundException, SQLException {
@@ -98,7 +117,6 @@ public class Buy {
 	private int[] availablilityCheck(String[] isbns, String[] quantities)
 			throws InvalidAttributeValueException, ClassNotFoundException,
 			SQLException {
-
 		if (isbns.length != quantities.length) {
 			throw new InvalidAttributeValueException();
 		}
@@ -123,6 +141,7 @@ public class Buy {
 				}
 			}
 		}
+
 		return results;
 	}
 }

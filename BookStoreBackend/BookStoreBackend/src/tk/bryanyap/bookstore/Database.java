@@ -19,6 +19,13 @@ import org.w3c.dom.Element;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
+/**
+ * Database class. Used to handle database operations such as inserting,
+ * updating and selecting records.
+ * 
+ * @author Bryan Yap
+ *
+ */
 public class Database {
 	private static String password = "password";
 	private static String userid = "root";
@@ -68,10 +75,21 @@ public class Database {
 				results.appendChild(row);
 				for (int ii = 1; ii <= colCount; ii++) {
 					String columnName = rsmd.getColumnName(ii);
-					Object value = resultSet.getObject(ii);
+					String value = "";
+
+					// Check if a record in the the resultSet is null on a
+					// particular attribute.
+					// If it is, set it to an empty String.
+					if (resultSet.getString(ii) == null) {
+						value = "";
+					} else {
+						value = resultSet.getString(ii);
+					}
+
 					Element node = doc.createElement(columnName);
-					node.appendChild(doc.createTextNode(value.toString()));
+					node.appendChild(doc.createTextNode(value));
 					row.appendChild(node);
+
 				}
 			}
 
@@ -96,14 +114,13 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			return Database.error(e.getMessage() + ",SQLException");
+			return error(e);
 		} catch (ParserConfigurationException e) {
-			return Database.error(e.getMessage()
-					+ ",ParserConfigurationException");
+			return error(e);
 		} catch (IOException e) {
-			return Database.error(e.getMessage() + ",IOException");
+			return error(e);
 		} catch (ClassNotFoundException e) {
-			return Database.error(e.getMessage() + ",IOException");
+			return error(e);
 		}
 	}
 
@@ -149,6 +166,14 @@ public class Database {
 
 	}
 
+	/**
+	 * Used to get the first result of a query.
+	 * 
+	 * @param query
+	 * @return firstResultString
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public static String queryFirstResult(String query) throws SQLException,
 			ClassNotFoundException {
 		Connection connect = null;

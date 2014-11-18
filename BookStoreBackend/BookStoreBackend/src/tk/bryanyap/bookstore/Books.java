@@ -19,67 +19,70 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * 
+ * @author Bryan Yap
+ *
+ */
 @Path("/books")
 public class Books {
-
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public String getBooks() {
-		return Database.getTableToXML("books");
+		return Database.getTableToXML("books_ratings_view");
 	}
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
 	public String getBooks(String input) {
-		try {
-			return Database.queryToXML(this.generateQuery(input));
-		} catch (SAXException e) {
-			return Database.error(e.getMessage() + ",SAXException");
-		} catch (IOException e) {
-			return Database.error(e.getMessage() + ",IOException");
-		} catch (ParserConfigurationException e) {
-			return Database.error(e.getMessage() + ",ParserConfigurationException");
-		}
+		return Database.queryToXML(this.generateQuery(input));
 	}
 
-	private String generateQuery(String xmlString) throws SAXException,
-			IOException, ParserConfigurationException {
+	private String generateQuery(String xmlString) {
 		String title = "";
 		String authors = "";
 		String publisher = "";
 		String subject = "";
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
-				.getBytes()));
+		DocumentBuilder dBuilder;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+					.getBytes()));
+			NodeList nList = doc.getElementsByTagName("search");
 
-		NodeList nList = doc.getElementsByTagName("search");
+			for (int temp = 0; temp < nList.getLength(); temp++) {
+				Node nNode = nList.item(temp);
 
-		for (int temp = 0; temp < nList.getLength(); temp++) {
-			Node nNode = nList.item(temp);
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) nNode;
 
-			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-				Element eElement = (Element) nNode;
-
-				title = eElement.getElementsByTagName("title").item(0)
-						.getTextContent();
-				authors = eElement.getElementsByTagName("authors").item(0)
-						.getTextContent();
-				publisher = eElement.getElementsByTagName("publisher").item(0)
-						.getTextContent();
-				subject = eElement.getElementsByTagName("subject").item(0)
-						.getTextContent();
+					title = eElement.getElementsByTagName("title").item(0)
+							.getTextContent();
+					authors = eElement.getElementsByTagName("authors").item(0)
+							.getTextContent();
+					publisher = eElement.getElementsByTagName("publisher")
+							.item(0).getTextContent();
+					subject = eElement.getElementsByTagName("subject").item(0)
+							.getTextContent();
+				}
 			}
-		}
 
-		String query = "select * from books where title like '%"
-				+ title + "%' and authors like '%" + authors
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		}
+		
+		String query = "select * from books_ratings_view where title like '%" + title
+				+ "%' and authors like '%" + authors
 				+ "%' and publisher like '%" + publisher
 				+ "%' and subject like '%" + subject + "%';";
 
 		return query;
 	}
-
 }
