@@ -34,7 +34,7 @@ public class Ratings {
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
+	@Consumes
 	public String getRatings(String input) {
 		return input;
 	}

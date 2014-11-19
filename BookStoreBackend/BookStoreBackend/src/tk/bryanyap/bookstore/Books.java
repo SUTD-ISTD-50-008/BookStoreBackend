@@ -34,7 +34,7 @@ public class Books {
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
+	@Consumes
 	public String getBooks(String input) {
 		return Database.queryToXML(this.generateQuery(input));
 	}
@@ -44,6 +44,8 @@ public class Books {
 		String authors = "";
 		String publisher = "";
 		String subject = "";
+		String year_or_rating = "";
+		String order_by = "";
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
@@ -53,7 +55,7 @@ public class Books {
 					.getBytes()));
 			NodeList nList = doc.getElementsByTagName("search");
 
-			for (int temp = 0; temp < nList.getLength(); temp++) {
+			for (int temp = 0; temp < 1; temp++) {
 				Node nNode = nList.item(temp);
 
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -67,6 +69,11 @@ public class Books {
 							.item(0).getTextContent();
 					subject = eElement.getElementsByTagName("subject").item(0)
 							.getTextContent();
+					year_or_rating = eElement
+							.getElementsByTagName("year_or_rating").item(0)
+							.getTextContent();
+					order_by = eElement.getElementsByTagName("order_by")
+							.item(0).getTextContent();
 				}
 			}
 
@@ -77,11 +84,25 @@ public class Books {
 		} catch (IOException e) {
 			return Database.error(e);
 		}
-		
-		String query = "select * from books_ratings_view where title like '%" + title
-				+ "%' and authors like '%" + authors
+
+		// Set year_or_rating and order_by to the valid sql commands
+		if (year_or_rating.equals("rating")) {
+			year_or_rating = "average_review";
+		} else {
+			year_or_rating = "publication_year";
+		}
+		if (order_by.equals("descending")) {
+			order_by = "desc";
+		} else {
+			order_by = "";
+		}
+		String orderByQuery = "order by " + year_or_rating + " " + order_by;
+
+		String query = "select * from books_ratings_view where title like '%"
+				+ title + "%' and authors like '%" + authors
 				+ "%' and publisher like '%" + publisher
-				+ "%' and subject like '%" + subject + "%';";
+				+ "%' and subject like '%" + subject + "%'" + orderByQuery
+				+ ";";
 
 		return query;
 	}

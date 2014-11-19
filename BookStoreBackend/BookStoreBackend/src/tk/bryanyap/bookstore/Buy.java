@@ -29,7 +29,7 @@ public class Buy {
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
+	@Consumes
 	public String buy(String input) {
 		String[] isbns = null;
 		String[] quantities = null;
@@ -91,9 +91,12 @@ public class Buy {
 		}
 
 		for (int i = 0; i < isbns.length; i++) {
+			// Not used: Database trigger automatically does this.
 			// Update the Books table, decrease the quantity
-			String booksUpdateQuery = "update";
-			Database.update(booksUpdateQuery);
+			/*
+			 * String booksUpdateQuery = "update";
+			 * Database.update(booksUpdateQuery);
+			 */
 
 			// Insert order into the order table
 			String ordersInsertQuery = "insert into";

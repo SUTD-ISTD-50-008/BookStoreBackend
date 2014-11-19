@@ -40,7 +40,7 @@ public class Login {
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
+	@Consumes
 	public String login(String input) {
 		ResultSet results;
 		try {
