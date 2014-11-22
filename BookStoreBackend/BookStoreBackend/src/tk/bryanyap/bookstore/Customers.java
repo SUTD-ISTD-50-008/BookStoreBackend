@@ -2,7 +2,6 @@ package tk.bryanyap.bookstore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -39,11 +38,7 @@ public class Customers {
 	@Consumes
 	public String getCustomer(String input) {
 		try {
-			return Database.insert(generateQuery(input));
-		} catch (ClassNotFoundException e) {
-			return Database.error(e);
-		} catch (SQLException e) {
-			return Database.error(e);
+			return Database.queryToXML(generateQuery(input));
 		} catch (ParserConfigurationException e) {
 			return Database.error(e);
 		} catch (SAXException e) {
