@@ -228,7 +228,7 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.executeQuery(query);
+		statement.execute(query);
 
 		return success();
 	}
@@ -257,7 +257,7 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.executeQuery(query);
+		statement.execute(query);
 
 		return success();
 	}

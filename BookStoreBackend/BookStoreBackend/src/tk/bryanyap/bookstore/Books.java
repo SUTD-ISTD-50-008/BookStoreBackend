@@ -36,10 +36,19 @@ public class Books {
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes
 	public String getBooks(String input) {
-		return Database.queryToXML(this.generateQuery(input));
+		try {
+			return Database.queryToXML(this.generateQuery(input));
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		}
 	}
 
-	private String generateQuery(String xmlString) {
+	private String generateQuery(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
 		String title = "";
 		String authors = "";
 		String publisher = "";
@@ -49,40 +58,32 @@ public class Books {
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
-					.getBytes()));
-			NodeList nList = doc.getElementsByTagName("search");
 
-			for (int temp = 0; temp < 1; temp++) {
-				Node nNode = nList.item(temp);
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+				.getBytes()));
+		NodeList nList = doc.getElementsByTagName("search");
 
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
+		for (int temp = 0; temp < 1; temp++) {
+			Node nNode = nList.item(temp);
 
-					title = eElement.getElementsByTagName("title").item(0)
-							.getTextContent();
-					authors = eElement.getElementsByTagName("authors").item(0)
-							.getTextContent();
-					publisher = eElement.getElementsByTagName("publisher")
-							.item(0).getTextContent();
-					subject = eElement.getElementsByTagName("subject").item(0)
-							.getTextContent();
-					year_or_rating = eElement
-							.getElementsByTagName("year_or_rating").item(0)
-							.getTextContent();
-					order_by = eElement.getElementsByTagName("order_by")
-							.item(0).getTextContent();
-				}
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+
+				title = eElement.getElementsByTagName("title").item(0)
+						.getTextContent();
+				authors = eElement.getElementsByTagName("authors").item(0)
+						.getTextContent();
+				publisher = eElement.getElementsByTagName("publisher").item(0)
+						.getTextContent();
+				subject = eElement.getElementsByTagName("subject").item(0)
+						.getTextContent();
+				year_or_rating = eElement
+						.getElementsByTagName("year_or_rating").item(0)
+						.getTextContent();
+				order_by = eElement.getElementsByTagName("order_by").item(0)
+						.getTextContent();
 			}
-
-		} catch (ParserConfigurationException e) {
-			return Database.error(e);
-		} catch (SAXException e) {
-			return Database.error(e);
-		} catch (IOException e) {
-			return Database.error(e);
 		}
 
 		// Set year_or_rating and order_by to the valid sql commands

@@ -64,6 +64,14 @@ public class Login {
 			return Database.error(e);
 		} catch (SQLException e) {
 			return Database.error(e);
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		} catch (InvalidInputException e) {
+			return Database.error(e);
 		}
 
 		// Count the number of results retrieved, return error message if
@@ -71,48 +79,38 @@ public class Login {
 
 	}
 
-	private String generateQuery(String xmlString) {
+	private String generateQuery(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException,
+			InvalidInputException {
 		String login_name = "";
 		String password = "";
 
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc;
-			doc = dBuilder
-					.parse(new ByteArrayInputStream(xmlString.getBytes()));
-			NodeList nList = doc.getElementsByTagName("login");
-			if (nList.getLength() > 1) {
-				throw new InvalidInputException();
-			}
-
-			for (int temp = 0; temp < nList.getLength(); temp++) {
-				Node nNode = nList.item(temp);
-
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-
-					login_name = eElement.getElementsByTagName("login_name")
-							.item(0).getTextContent();
-					password = eElement.getElementsByTagName("password")
-							.item(0).getTextContent();
-				}
-			}
-
-			String query = "select * from customers where login_name='"
-					+ login_name + "' and password='" + password + "';";
-
-			return query;
-		} catch (SAXException e) {
-			return Database.error(e);
-		} catch (IOException e) {
-			return Database.error(e);
-		} catch (InvalidInputException e) {
-			return Database.error(e);
-		} catch (ParserConfigurationException e) {
-			return Database.error(e);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc;
+		doc = dBuilder.parse(new ByteArrayInputStream(xmlString.getBytes()));
+		NodeList nList = doc.getElementsByTagName("login");
+		if (nList.getLength() > 1) {
+			throw new InvalidInputException();
 		}
+
+		for (int temp = 0; temp < nList.getLength(); temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+
+				login_name = eElement.getElementsByTagName("login_name")
+						.item(0).getTextContent();
+				password = eElement.getElementsByTagName("password").item(0)
+						.getTextContent();
+			}
+		}
+
+		String query = "select * from customers where login_name='"
+				+ login_name + "' and password='" + password + "';";
+
+		return query;
 
 	}
 }

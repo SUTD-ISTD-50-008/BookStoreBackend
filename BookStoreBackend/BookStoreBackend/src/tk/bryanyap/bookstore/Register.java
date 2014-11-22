@@ -44,10 +44,20 @@ public class Register {
 			return Database.error(e);
 		} catch (SQLException e) {
 			return Database.error(e);
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		} catch (InvalidInputException e) {
+			return Database.error(e);
 		}
 	}
 
-	private String generateQuery(String xmlString) {
+	private String generateQuery(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException,
+			InvalidInputException {
 		String first_name = "";
 		String last_name = "";
 		String password = "";
@@ -56,59 +66,47 @@ public class Register {
 		String phone_number = "";
 		String login_name = "";
 
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc;
-			doc = dBuilder
-					.parse(new ByteArrayInputStream(xmlString.getBytes()));
-			NodeList nList = doc.getElementsByTagName("register");
-			if (nList.getLength() > 1) {
-				throw new InvalidInputException();
-			}
-
-			for (int temp = 0; temp < nList.getLength(); temp++) {
-				Node nNode = nList.item(temp);
-
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-
-					first_name = eElement.getElementsByTagName("first_name")
-							.item(0).getTextContent();
-					last_name = eElement.getElementsByTagName("last_name")
-							.item(0).getTextContent();
-					password = eElement.getElementsByTagName("password")
-							.item(0).getTextContent();
-					credit_card_number = eElement
-							.getElementsByTagName("credit_card_number").item(0)
-							.getTextContent();
-					address = eElement.getElementsByTagName("address").item(0)
-							.getTextContent();
-					phone_number = eElement
-							.getElementsByTagName("phone_number").item(0)
-							.getTextContent();
-					login_name = eElement.getElementsByTagName("login_name")
-							.item(0).getTextContent();
-
-				}
-			}
-
-			String query = "insert into customers values ('" + first_name
-					+ "', '" + last_name + "', '" + password + "', '"
-					+ credit_card_number + "', '" + address + "', '"
-					+ phone_number + "', '" + login_name + "'" + ");";
-
-			return query;
-		} catch (SAXException e) {
-			return Database.error(e);
-		} catch (IOException e) {
-			return Database.error(e);
-		} catch (InvalidInputException e) {
-			return Database.error(e);
-		} catch (ParserConfigurationException e) {
-			return Database.error(e);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc;
+		doc = dBuilder.parse(new ByteArrayInputStream(xmlString.getBytes()));
+		NodeList nList = doc.getElementsByTagName("register");
+		if (nList.getLength() > 1) {
+			throw new InvalidInputException();
 		}
 
+		for (int temp = 0; temp < nList.getLength(); temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+
+				first_name = eElement.getElementsByTagName("first_name")
+						.item(0).getTextContent();
+				last_name = eElement.getElementsByTagName("last_name").item(0)
+						.getTextContent();
+				password = eElement.getElementsByTagName("password").item(0)
+						.getTextContent();
+				credit_card_number = eElement
+						.getElementsByTagName("credit_card_number").item(0)
+						.getTextContent();
+				address = eElement.getElementsByTagName("address").item(0)
+						.getTextContent();
+				phone_number = eElement.getElementsByTagName("phone_number")
+						.item(0).getTextContent();
+				login_name = eElement.getElementsByTagName("login_name")
+						.item(0).getTextContent();
+
+			}
+		}
+
+		String query = "insert into customers values ('" + first_name + "', '"
+				+ last_name + "', '" + password + "', '" + credit_card_number
+				+ "', '" + address + "', '" + phone_number + "', '"
+				+ login_name + "'" + ");";
+
+		return query;
+
 	}
+
 }

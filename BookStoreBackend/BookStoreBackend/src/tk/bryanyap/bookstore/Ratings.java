@@ -72,7 +72,8 @@ public class Ratings {
 
 	}
 
-	private String generateQueryInsert(String xmlString) {
+	private String generateQueryInsert(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
 		String numerical_score = "";
 		String login_name_review_writer = "";
 		String login_name_review_rater = "";
@@ -80,37 +81,29 @@ public class Ratings {
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
-					.getBytes()));
-			NodeList nList = doc.getElementsByTagName("rate");
 
-			for (int temp = 0; temp < 1; temp++) {
-				Node nNode = nList.item(temp);
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+				.getBytes()));
+		NodeList nList = doc.getElementsByTagName("rate");
 
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-					numerical_score = eElement
-							.getElementsByTagName("numerical_score").item(0)
-							.getTextContent();
-					login_name_review_writer = eElement
-							.getElementsByTagName("login_name_review_writer")
-							.item(0).getTextContent();
-					login_name_review_rater = eElement
-							.getElementsByTagName("login_name_review_rater")
-							.item(0).getTextContent();
-					isbn = eElement.getElementsByTagName("isbn").item(0)
-							.getTextContent();
-				}
+		for (int temp = 0; temp < 1; temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+				numerical_score = eElement
+						.getElementsByTagName("numerical_score").item(0)
+						.getTextContent();
+				login_name_review_writer = eElement
+						.getElementsByTagName("login_name_review_writer")
+						.item(0).getTextContent();
+				login_name_review_rater = eElement
+						.getElementsByTagName("login_name_review_rater")
+						.item(0).getTextContent();
+				isbn = eElement.getElementsByTagName("isbn").item(0)
+						.getTextContent();
 			}
-
-		} catch (ParserConfigurationException e) {
-			return Database.error(e);
-		} catch (SAXException e) {
-			return Database.error(e);
-		} catch (IOException e) {
-			return Database.error(e);
 		}
 
 		String query = "insert into rates values (" + numerical_score + ", '"
@@ -121,33 +114,26 @@ public class Ratings {
 
 	}
 
-	private String generateQuerySelect(String xmlString) {
+	private String generateQuerySelect(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
 		String isbn = "";
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
-					.getBytes()));
-			NodeList nList = doc.getElementsByTagName("search");
 
-			for (int temp = 0; temp < 1; temp++) {
-				Node nNode = nList.item(temp);
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+				.getBytes()));
+		NodeList nList = doc.getElementsByTagName("search");
 
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-					isbn = eElement.getElementsByTagName("isbn").item(0)
-							.getTextContent();
-				}
+		for (int temp = 0; temp < 1; temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+				isbn = eElement.getElementsByTagName("isbn").item(0)
+						.getTextContent();
 			}
-
-		} catch (ParserConfigurationException e) {
-			return Database.error(e);
-		} catch (SAXException e) {
-			return Database.error(e);
-		} catch (IOException e) {
-			return Database.error(e);
 		}
 
 		String query = "select * from rates where ISBN13='" + isbn + "';";
