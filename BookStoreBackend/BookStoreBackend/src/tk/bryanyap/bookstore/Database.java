@@ -31,7 +31,7 @@ import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
  */
 public class Database {
 	private static String password = "password";
-	private static String userid = "root";
+	private static String userid = "api_user";
 	private static String ipAddress = "localhost";
 	private static int port = 3306;
 	private static String databaseName = "bookstore";
@@ -228,7 +228,7 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.execute(query);
+		statement.executeUpdate(query);
 
 		return success();
 	}
@@ -257,7 +257,7 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.execute(query);
+		statement.executeUpdate(query);
 
 		return success();
 	}

@@ -107,7 +107,7 @@ public class Reviews {
 			}
 		}
 
-		String query = "insert into reviews values (numerical_score, short_text, ISBN13, login_name) values ("
+		String query = "insert into reviews (numerical_score, short_text, ISBN13, login_name) values ("
 				+ numerical_score
 				+ ", '"
 				+ short_text
