@@ -33,6 +33,7 @@ public class Buy {
 	public String buy(String input) {
 		String[] isbns = null;
 		String[] quantities = null;
+		String login_name = "";
 
 		try {
 			int[] availabilityArray = availablilityCheck(isbns, quantities);
@@ -48,14 +49,14 @@ public class Buy {
 			// Get the current system time to set as the order time
 			Timestamp orderTime = new Timestamp(System.currentTimeMillis());
 
-			String oidInsertQuery = "insert into orderid_monitor values()";
+			String oidInsertQuery = "insert into orderid_monitor (order_status) values('pending')";
 			Database.insert(oidInsertQuery);
 			int orderID = Integer.parseInt(Database
 					.queryFirstResult("select max() from orderid_monitor"));
 
 			// Process the order once the orderid_monitor table is modified and
 			// orderID is retrieved
-			processOrder(isbns, quantities, orderID, orderTime);
+			processOrder(isbns, quantities, orderID, orderTime, login_name);
 
 		} catch (InvalidAttributeValueException e) {
 			return Database
@@ -84,8 +85,9 @@ public class Buy {
 	 * @throws SQLException
 	 */
 	private void processOrder(String[] isbns, String[] quantities, int orderID,
-			Timestamp orderTime) throws InvalidAttributeValueException,
-			ClassNotFoundException, SQLException {
+			Timestamp orderTime, String login_name)
+			throws InvalidAttributeValueException, ClassNotFoundException,
+			SQLException {
 		if (isbns.length != quantities.length) {
 			throw new InvalidAttributeValueException();
 		}
@@ -99,7 +101,13 @@ public class Buy {
 			 */
 
 			// Insert order into the order table
-			String ordersInsertQuery = "insert into";
+			String ordersInsertQuery = "insert into orders (number_of_copies, OID, login_name, ISBN13) values ("
+					+ quantities[i]
+					+ ", "
+					+ orderID
+					+ ", '"
+					+ login_name
+					+ "', '" + isbns[i] + "');";
 			Database.insert(ordersInsertQuery);
 		}
 	}

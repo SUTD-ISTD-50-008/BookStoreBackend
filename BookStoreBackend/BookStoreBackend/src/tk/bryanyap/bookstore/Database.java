@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -205,10 +208,11 @@ public class Database {
 	 * Used to run an update into the database
 	 * 
 	 * @param query
+	 * @return successXMLString
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public static void update(String query) throws ClassNotFoundException,
+	public static String update(String query) throws ClassNotFoundException,
 			SQLException {
 		Connection connect = null;
 		Statement statement = null;
@@ -225,16 +229,19 @@ public class Database {
 
 		// Execute the query
 		statement.executeQuery(query);
+
+		return success();
 	}
 
 	/**
 	 * Used to run an insert query into the database
 	 * 
 	 * @param query
+	 * @return successXMLString
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public static void insert(String query) throws SQLException,
+	public static String insert(String query) throws SQLException,
 			ClassNotFoundException {
 		Connection connect = null;
 		Statement statement = null;
@@ -251,6 +258,20 @@ public class Database {
 
 		// Execute the query
 		statement.executeQuery(query);
+
+		return success();
+	}
+
+	/**
+	 * Get the current server time and place within <success> tags to symbolize
+	 * success on an operation.
+	 * 
+	 * @return successXMLString
+	 */
+	public static String success() {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Calendar cal = Calendar.getInstance();
+		return "<success>" + dateFormat.format(cal.getTime()) + "</success>";
 	}
 
 	/**

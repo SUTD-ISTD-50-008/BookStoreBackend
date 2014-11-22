@@ -2,11 +2,7 @@ package tk.bryanyap.bookstore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -30,50 +26,35 @@ import org.xml.sax.SAXException;
  * @author Bryan Yap
  *
  */
-@Path("/login")
-public class Login {
+@Path("/register")
+public class Register {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String login() {
+	public String register() {
 		return "<html><h1>Error!</h1><p>Please buy through the app.</p></html>";
 	}
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes
-	public String login(String input) {
-		ResultSet results;
+	public String register(String input) {
 		try {
-			results = Database.queryToResultSet(generateQuery(input));
-			int count = 0;
-			while (results.next()) {
-				++count;
-			}
-			// If the result set contains only one entry, return a Success
-			// message
-			if (count == 1) {
-				DateFormat dateFormat = new SimpleDateFormat(
-						"yyyy/MM/dd HH:mm:ss");
-				Calendar cal = Calendar.getInstance();
-				return "<success>" + dateFormat.format(cal.getTime())
-						+ "</success>";
-			} else {
-				return "<fail>Invalid userid or password.\nPlease register first.</fail>";
-			}
+			return Database.insert(generateQuery(input));
 		} catch (ClassNotFoundException e) {
 			return Database.error(e);
 		} catch (SQLException e) {
 			return Database.error(e);
 		}
-
-		// Count the number of results retrieved, return error message if
-		// ResultSet is empty
-
 	}
 
 	private String generateQuery(String xmlString) {
-		String login_name = "";
+		String first_name = "";
+		String last_name = "";
 		String password = "";
+		String credit_card_number = "";
+		String address = "";
+		String phone_number = "";
+		String login_name = "";
 
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -82,7 +63,7 @@ public class Login {
 			Document doc;
 			doc = dBuilder
 					.parse(new ByteArrayInputStream(xmlString.getBytes()));
-			NodeList nList = doc.getElementsByTagName("login");
+			NodeList nList = doc.getElementsByTagName("register");
 			if (nList.getLength() > 1) {
 				throw new InvalidInputException();
 			}
@@ -93,15 +74,30 @@ public class Login {
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) nNode;
 
-					login_name = eElement.getElementsByTagName("login_name")
+					first_name = eElement.getElementsByTagName("first_name")
+							.item(0).getTextContent();
+					last_name = eElement.getElementsByTagName("last_name")
 							.item(0).getTextContent();
 					password = eElement.getElementsByTagName("password")
 							.item(0).getTextContent();
+					credit_card_number = eElement
+							.getElementsByTagName("credit_card_number").item(0)
+							.getTextContent();
+					address = eElement.getElementsByTagName("address").item(0)
+							.getTextContent();
+					phone_number = eElement
+							.getElementsByTagName("phone_number").item(0)
+							.getTextContent();
+					login_name = eElement.getElementsByTagName("login_name")
+							.item(0).getTextContent();
+
 				}
 			}
 
-			String query = "select * from customers where login_name='"
-					+ login_name + "' and password='" + password + "';";
+			String query = "insert into customers values ('" + first_name
+					+ "', '" + last_name + "', '" + password + "', '"
+					+ credit_card_number + "', '" + address + "', '"
+					+ phone_number + "', '" + login_name + "'" + ");";
 
 			return query;
 		} catch (SAXException e) {

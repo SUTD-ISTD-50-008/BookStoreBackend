@@ -2,6 +2,7 @@ package tk.bryanyap.bookstore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,21 +31,52 @@ public class Ratings {
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public String getRatings() {
-		return Database.getTableToXML("ratings");
+		return Database.getTableToXML("rates");
 	}
 
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes
 	public String getRatings(String input) {
-		return input;
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(new ByteArrayInputStream(input
+					.getBytes()));
+			NodeList rateList = doc.getElementsByTagName("rate");
+			NodeList searchList = doc.getElementsByTagName("search");
+
+			if ((rateList.getLength() == 1 && searchList.getLength() == 0)) {
+				return Database.insert(generateQueryInsert(input));
+			} else if ((rateList.getLength() == 0 && searchList.getLength() == 1)) {
+				return Database.queryToXML(generateQuerySelect(input));
+			} else {
+				throw new InvalidInputException();
+			}
+
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		} catch (ClassNotFoundException e) {
+			return Database.error(e);
+		} catch (SQLException e) {
+			return Database.error(e);
+		} catch (InvalidInputException e) {
+			return Database.error(e);
+		}
+
 	}
-	
-	private String generateQuery(String xmlString) {
-		String title = "";
-		String authors = "";
-		String publisher = "";
-		String subject = "";
+
+	private String generateQueryInsert(String xmlString) {
+		String numerical_score = "";
+		String login_name_review_writer = "";
+		String login_name_review_rater = "";
+		String isbn = "";
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
@@ -51,21 +84,23 @@ public class Ratings {
 			dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
 					.getBytes()));
-			NodeList nList = doc.getElementsByTagName("search");
+			NodeList nList = doc.getElementsByTagName("rate");
 
-			for (int temp = 0; temp < nList.getLength(); temp++) {
+			for (int temp = 0; temp < 1; temp++) {
 				Node nNode = nList.item(temp);
 
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) nNode;
-
-					title = eElement.getElementsByTagName("title").item(0)
+					numerical_score = eElement
+							.getElementsByTagName("numerical_score").item(0)
 							.getTextContent();
-					authors = eElement.getElementsByTagName("authors").item(0)
-							.getTextContent();
-					publisher = eElement.getElementsByTagName("publisher")
+					login_name_review_writer = eElement
+							.getElementsByTagName("login_name_review_writer")
 							.item(0).getTextContent();
-					subject = eElement.getElementsByTagName("subject").item(0)
+					login_name_review_rater = eElement
+							.getElementsByTagName("login_name_review_rater")
+							.item(0).getTextContent();
+					isbn = eElement.getElementsByTagName("isbn").item(0)
 							.getTextContent();
 				}
 			}
@@ -78,10 +113,44 @@ public class Ratings {
 			return Database.error(e);
 		}
 
-		String query = "select * from books where title like '%" + title
-				+ "%' and authors like '%" + authors
-				+ "%' and publisher like '%" + publisher
-				+ "%' and subject like '%" + subject + "%';";
+		String query = "insert into rates values (" + numerical_score + ", '"
+				+ login_name_review_writer + "', '" + login_name_review_rater
+				+ "', '" + isbn + "'" + ");";
+
+		return query;
+
+	}
+
+	private String generateQuerySelect(String xmlString) {
+		String isbn = "";
+
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+					.getBytes()));
+			NodeList nList = doc.getElementsByTagName("search");
+
+			for (int temp = 0; temp < 1; temp++) {
+				Node nNode = nList.item(temp);
+
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) nNode;
+					isbn = eElement.getElementsByTagName("isbn").item(0)
+							.getTextContent();
+				}
+			}
+
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		}
+
+		String query = "select * from rates where ISBN13='" + isbn + "';";
 
 		return query;
 	}
