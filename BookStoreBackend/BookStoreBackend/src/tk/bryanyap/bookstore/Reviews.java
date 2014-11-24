@@ -51,7 +51,7 @@ public class Reviews {
 				return Database.insert(generateQueryInsert(input));
 			} else if (reviewList.getLength() == 0
 					&& searchList.getLength() == 1) {
-				return Database.getTableToXML(generateQuerySelect(input));
+				return Database.queryToXML(generateQuerySelect(input));
 			} else {
 				throw new InvalidInputException();
 			}
@@ -148,9 +148,9 @@ public class Reviews {
 			}
 		}
 
-		String query = "select * from review_avgrating_view where ISBN13='"
+		String query = "select * from review_avgrating_view where ISBN13 = '"
 				+ isbn
-				+ "' (order by case when average_rating_score = 'no ratings given yet' then average_rating_score = 0 end), average_rating_score desc limit "
+				+ "' order by (case when average_rating_score = 'no ratings given yet' then average_rating_score = 0 end), average_rating_score desc limit "
 				+ limit + ";";
 
 		return query;

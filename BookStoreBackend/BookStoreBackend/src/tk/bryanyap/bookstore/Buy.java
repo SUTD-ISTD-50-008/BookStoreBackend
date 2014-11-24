@@ -1,9 +1,12 @@
 package tk.bryanyap.bookstore;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.naming.directory.InvalidAttributeValueException;
@@ -13,6 +16,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * 
@@ -31,9 +43,45 @@ public class Buy {
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes
 	public String buy(String input) {
-		String[] isbns = null;
-		String[] quantities = null;
+		ArrayList<String> isbns = new ArrayList<String>();
+		ArrayList<Integer> quantities = new ArrayList<Integer>();
 		String login_name = "";
+
+		// Parse the input
+
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(new ByteArrayInputStream(input
+					.getBytes()));
+			NodeList nList = doc.getElementsByTagName("buy");
+			// If non-inserting operation detected
+			for (int temp = 0; temp < nList.getLength(); temp++) {
+				Node nNode = nList.item(temp);
+
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) nNode;
+
+					login_name = eElement.getElementsByTagName("login_name")
+							.item(0).getTextContent();
+					String isbn = eElement.getElementsByTagName("isbn").item(0)
+							.getTextContent();
+					String quantity = eElement.getElementsByTagName("quantity")
+							.item(0).getTextContent();
+
+					isbns.add(isbn);
+					quantities.add(Integer.parseInt(quantity));
+				}
+			}
+		} catch (ParserConfigurationException e) {
+			return Database.error(e);
+		} catch (SAXException e) {
+			return Database.error(e);
+		} catch (IOException e) {
+			return Database.error(e);
+		}
 
 		try {
 			int[] availabilityArray = availablilityCheck(isbns, quantities);
@@ -56,7 +104,8 @@ public class Buy {
 
 			// Process the order once the orderid_monitor table is modified and
 			// orderID is retrieved
-			processOrder(isbns, quantities, orderID, orderTime, login_name);
+			return processOrder(isbns, quantities, orderID, orderTime,
+					login_name);
 
 		} catch (InvalidAttributeValueException e) {
 			return Database
@@ -67,7 +116,6 @@ public class Buy {
 			return Database.error(e.getMessage() + ",SQLException");
 		}
 
-		return "<success>" + input + "</success>";
 	}
 
 	/**
@@ -84,15 +132,15 @@ public class Buy {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	private void processOrder(String[] isbns, String[] quantities, int orderID,
-			Timestamp orderTime, String login_name)
-			throws InvalidAttributeValueException, ClassNotFoundException,
-			SQLException {
-		if (isbns.length != quantities.length) {
+	private String processOrder(ArrayList<String> isbns,
+			ArrayList<Integer> quantities, int orderID, Timestamp orderTime,
+			String login_name) throws InvalidAttributeValueException,
+			ClassNotFoundException, SQLException {
+		if (isbns.size() != quantities.size()) {
 			throw new InvalidAttributeValueException();
 		}
 
-		for (int i = 0; i < isbns.length; i++) {
+		for (int i = 0; i < isbns.size(); i++) {
 			// Not used: Database trigger automatically does this.
 			// Update the Books table, decrease the quantity
 			/*
@@ -102,14 +150,15 @@ public class Buy {
 
 			// Insert order into the order table
 			String ordersInsertQuery = "insert into orders (number_of_copies, OID, login_name, ISBN13) values ("
-					+ quantities[i]
+					+ quantities.get(i)
 					+ ", "
 					+ orderID
 					+ ", '"
 					+ login_name
-					+ "', '" + isbns[i] + "');";
+					+ "', '" + isbns.get(i) + "');";
 			Database.insert(ordersInsertQuery);
 		}
+		return Database.success();
 	}
 
 	/**
@@ -125,16 +174,17 @@ public class Buy {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	private int[] availablilityCheck(String[] isbns, String[] quantities)
+	private int[] availablilityCheck(ArrayList<String> isbns,
+			ArrayList<Integer> quantities)
 			throws InvalidAttributeValueException, ClassNotFoundException,
 			SQLException {
-		if (isbns.length != quantities.length) {
+		if (isbns.size() != quantities.size()) {
 			throw new InvalidAttributeValueException();
 		}
 
 		int[] results = { 0, 0, 0 };
 
-		for (int i = 0; i < isbns.length; i++) {
+		for (int i = 0; i < isbns.size(); i++) {
 			ResultSet resultSet = Database.queryToResultSet("");
 			ResultSetMetaData rsmd = resultSet.getMetaData();
 
@@ -147,7 +197,7 @@ public class Buy {
 					if (rsmd.getColumnName(ii) == "copies_in_inventory") {
 						int quantity = Integer.parseInt(resultSet.getObject(ii)
 								.toString());
-						results[i] = quantity - Integer.parseInt(quantities[i]);
+						results[i] = quantity - quantities.get(i);
 					}
 				}
 			}
