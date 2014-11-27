@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -95,17 +94,16 @@ public class Buy {
 
 			// Proceed to purchase if no shortages detected
 			// Get the current system time to set as the order time
-			Timestamp orderTime = new Timestamp(System.currentTimeMillis());
 
-			String oidInsertQuery = "insert into orderid_monitor (order_status) values('pending')";
+			String oidInsertQuery = "insert into orderid_monitor values();";
 			Database.insert(oidInsertQuery);
-			int orderID = Integer.parseInt(Database
-					.queryFirstResult("select max() from orderid_monitor"));
+			int orderID = Integer
+					.parseInt(Database
+							.queryFirstResult("select OID from orderid_monitor order by OID desc limit 1"));
 
 			// Process the order once the orderid_monitor table is modified and
 			// orderID is retrieved
-			return processOrder(isbns, quantities, orderID, orderTime,
-					login_name);
+			return processOrder(isbns, quantities, orderID, login_name);
 
 		} catch (InvalidAttributeValueException e) {
 			return Database
@@ -127,15 +125,14 @@ public class Buy {
 	 * @param isbns
 	 * @param quantities
 	 * @param orderID
-	 * @param orderTime
 	 * @throws InvalidAttributeValueException
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
 	private String processOrder(ArrayList<String> isbns,
-			ArrayList<Integer> quantities, int orderID, Timestamp orderTime,
-			String login_name) throws InvalidAttributeValueException,
-			ClassNotFoundException, SQLException {
+			ArrayList<Integer> quantities, int orderID, String login_name)
+			throws InvalidAttributeValueException, ClassNotFoundException,
+			SQLException {
 		if (isbns.size() != quantities.size()) {
 			throw new InvalidAttributeValueException();
 		}
@@ -185,7 +182,9 @@ public class Buy {
 		int[] results = { 0, 0, 0 };
 
 		for (int i = 0; i < isbns.size(); i++) {
-			ResultSet resultSet = Database.queryToResultSet("");
+			ResultSet resultSet = Database
+					.queryToResultSet("select * from books where ISBN13='"
+							+ isbns.get(i) + "';");
 			ResultSetMetaData rsmd = resultSet.getMetaData();
 
 			int colCount = rsmd.getColumnCount();
