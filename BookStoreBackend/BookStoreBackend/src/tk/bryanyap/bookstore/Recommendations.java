@@ -27,7 +27,7 @@ public class Recommendations {
 	@Consumes
 	public String getCustomer(String input) {
 		try {
-			return Database.getTableToXML(generateQuery(input));
+			return Database.queryToXML(generateQuery(input));
 		} catch (ParserConfigurationException e) {
 			return Database.error(e);
 		} catch (SAXException e) {
@@ -68,11 +68,11 @@ public class Recommendations {
 				+ "o2.isbn13 AS also_bought, "
 				+ "b2.title AS also_bought_title, "
 				+ "COUNT(o2.isbn13) AS pair_sales_count " + "FROM books b1 "
-				+ "LEFT JOIN orders o1 ON o1.ISBN13 = b1.ISBN13 "
+				+ "LEFT JOIN orders o1 ON o1.ISBN13=b1.ISBN13 "
 				+ "LEFT JOIN orders o2 ON "
-				+ "(o1.login_name = o2.login_name AND o1.isbn13 <> o2.isbn13) "
-				+ "LEFT JOIN books b2 ON o2.ISBN13 = b2.ISBN13 "
-				+ "WHERE o1.isbn13 = '" + isbn + "' " + "GROUP BY o2.isbn13 "
+				+ "(o1.login_name=o2.login_name AND o1.isbn13 <> o2.isbn13) "
+				+ "LEFT JOIN books b2 ON o2.ISBN13=b2.ISBN13 "
+				+ "WHERE o1.isbn13='" + isbn + "' " + "GROUP BY o2.isbn13 "
 				+ "ORDER BY COUNT(o2.isbn13) " + "DESC;";
 
 		return query;
