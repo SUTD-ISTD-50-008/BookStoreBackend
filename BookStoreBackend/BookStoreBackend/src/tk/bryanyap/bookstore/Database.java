@@ -228,9 +228,15 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.executeUpdate(query);
+		int numberOfRows = statement.executeUpdate(query);
 
-		return success();
+		if (numberOfRows == 1) {
+			return success();
+		} else {
+			return error("You updated " + numberOfRows
+					+ " rows. You should only update 1 row.");
+		}
+
 	}
 
 	/**
@@ -257,9 +263,14 @@ public class Database {
 		statement = connect.createStatement();
 
 		// Execute the query
-		statement.executeUpdate(query);
+		int numberOfRows = statement.executeUpdate(query);
 
-		return success();
+		if (numberOfRows == 1) {
+			return success();
+		} else {
+			return error("You inserted " + numberOfRows
+					+ " rows. You should only insert 1 row.");
+		}
 	}
 
 	/**
