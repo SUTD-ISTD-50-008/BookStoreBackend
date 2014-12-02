@@ -46,12 +46,20 @@ public class Reviews {
 					.getBytes()));
 			NodeList reviewList = doc.getElementsByTagName("review");
 			NodeList searchList = doc.getElementsByTagName("search");
+			NodeList search_by_login = doc
+					.getElementsByTagName("search_by_login");
 
-			if (reviewList.getLength() == 1 && searchList.getLength() == 0) {
+			if (reviewList.getLength() == 1 && searchList.getLength() == 0
+					&& search_by_login.getLength() == 0) {
 				return Database.insert(generateQueryInsert(input));
 			} else if (reviewList.getLength() == 0
-					&& searchList.getLength() == 1) {
+					&& searchList.getLength() == 1
+					&& search_by_login.getLength() == 0) {
 				return Database.queryToXML(generateQuerySelect(input));
+			} else if (reviewList.getLength() == 0
+					&& searchList.getLength() == 0
+					&& search_by_login.getLength() == 1) {
+				return Database.queryToXML(generateQuerySelectByLogin(input));
 			} else {
 				throw new InvalidInputException();
 			}
@@ -115,6 +123,38 @@ public class Reviews {
 				+ isbn
 				+ "', '"
 				+ login_name + "');";
+
+		return query;
+
+	}
+
+	private String generateQuerySelectByLogin(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
+		String login_name = "";
+
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+				.getBytes()));
+
+		NodeList nList = doc.getElementsByTagName("search_by_login");
+
+		// If non-inserting operation detected
+		for (int temp = 0; temp < nList.getLength(); temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+
+				login_name = eElement.getElementsByTagName("login_name")
+						.item(0).getTextContent();
+			}
+		}
+
+		String query = "select * from review_avgrating_view where reviewer='"
+				+ login_name + "';";
 
 		return query;
 

@@ -47,11 +47,19 @@ public class Ratings {
 					.getBytes()));
 			NodeList rateList = doc.getElementsByTagName("rate");
 			NodeList searchList = doc.getElementsByTagName("search");
+			NodeList search_by_login = doc
+					.getElementsByTagName("search_by_login");
 
-			if ((rateList.getLength() == 1 && searchList.getLength() == 0)) {
+			if ((rateList.getLength() == 1 && searchList.getLength() == 0 && search_by_login
+					.getLength() == 0)) {
 				return Database.insert(generateQueryInsert(input));
-			} else if ((rateList.getLength() == 0 && searchList.getLength() == 1)) {
+			} else if ((rateList.getLength() == 0
+					&& searchList.getLength() == 1 && search_by_login
+						.getLength() == 0)) {
 				return Database.queryToXML(generateQuerySelect(input));
+			} else if (rateList.getLength() == 0 && searchList.getLength() == 0
+					&& search_by_login.getLength() == 1) {
+				return Database.queryToXML(generateQuerySelectByLogin(input));
 			} else {
 				throw new InvalidInputException();
 			}
@@ -112,6 +120,34 @@ public class Ratings {
 
 		return query;
 
+	}
+
+	private String generateQuerySelectByLogin(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
+		String login_name = "";
+
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
+				.getBytes()));
+		NodeList nList = doc.getElementsByTagName("search");
+
+		for (int temp = 0; temp < 1; temp++) {
+			Node nNode = nList.item(temp);
+
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+				login_name = eElement.getElementsByTagName("login_name")
+						.item(0).getTextContent();
+			}
+		}
+
+		String query = "select * from rates where login_name_review_writer='"
+				+ login_name + "';";
+
+		return query;
 	}
 
 	private String generateQuerySelect(String xmlString)
