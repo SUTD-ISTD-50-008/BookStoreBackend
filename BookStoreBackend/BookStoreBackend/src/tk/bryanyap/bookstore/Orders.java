@@ -20,6 +20,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * 
+ * @author Bryan Yap
+ *
+ */
 @Path("/orders")
 public class Orders {
 	@GET

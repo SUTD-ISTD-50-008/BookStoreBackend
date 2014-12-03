@@ -132,7 +132,7 @@ public class Ratings {
 		dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(new ByteArrayInputStream(xmlString
 				.getBytes()));
-		NodeList nList = doc.getElementsByTagName("search");
+		NodeList nList = doc.getElementsByTagName("search_by_login");
 
 		for (int temp = 0; temp < 1; temp++) {
 			Node nNode = nList.item(temp);
