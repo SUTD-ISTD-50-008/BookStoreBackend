@@ -144,7 +144,7 @@ public class Ratings {
 			}
 		}
 
-		String query = "select * from rates where login_name_review_writer='"
+		String query = "select * from rates where login_name_review_rater='"
 				+ login_name + "';";
 
 		return query;
