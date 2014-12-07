@@ -30,7 +30,7 @@ public class Orders {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String orders() {
-		return Database.getTableToXML("orders");
+		return Database.getTableToXML("order_history_view");
 	}
 
 	@POST
@@ -77,7 +77,7 @@ public class Orders {
 			}
 		}
 
-		String query = "select * from orders where login_name='" + login_name
+		String query = "select * from order_history_view where login_name='" + login_name
 				+ "';";
 
 		return query;

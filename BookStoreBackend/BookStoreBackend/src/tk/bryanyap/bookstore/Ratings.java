@@ -31,7 +31,7 @@ public class Ratings {
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public String getRatings() {
-		return Database.getTableToXML("rates");
+		return Database.getTableToXML("rates_books_view");
 	}
 
 	@POST
@@ -144,10 +144,12 @@ public class Ratings {
 			}
 		}
 
-		String query = "select * from rates where login_name_review_rater='"
-				+ login_name + "';";
+//		String query = "select * from rates where login_name_review_rater='"
+//				+ login_name + "' left join books on rates.ISBN13=books.ISBN13;";
+		
+		String query2 = "select * from rates_books_view where login_name_review_rater='" + login_name + "';";
 
-		return query;
+		return query2;
 	}
 
 	private String generateQuerySelect(String xmlString)
@@ -172,7 +174,7 @@ public class Ratings {
 			}
 		}
 
-		String query = "select * from rates where ISBN13='" + isbn + "';";
+		String query = "select * from rates_books_view where ISBN13='" + isbn + "';";
 
 		return query;
 	}

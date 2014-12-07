@@ -153,6 +153,9 @@ public class Reviews {
 			}
 		}
 
+//		String query = "select * from review_books_view where login_name='"
+//				+ login_name + "';";
+		
 		String query = "select * from review_avgrating_view where reviewer='"
 				+ login_name + "';";
 

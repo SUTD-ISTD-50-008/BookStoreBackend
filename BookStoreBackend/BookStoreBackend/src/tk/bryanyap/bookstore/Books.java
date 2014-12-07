@@ -140,7 +140,7 @@ public class Books {
 				}
 			}
 
-			String query = "select * from books where ISBN13='" + isbn + "';";
+			String query = "select * from books_ratings_view where ISBN13='" + isbn + "';";
 
 			return query;
 
